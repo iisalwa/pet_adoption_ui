@@ -40,7 +40,6 @@ class PetAdoptionApp extends StatelessWidget {
   }
 }
 
-/// RootShell = main scaffold with bottom navigation (Home / Favorites / Profile)
 class RootShell extends StatefulWidget {
   const RootShell({super.key});
 

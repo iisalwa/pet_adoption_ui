@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import 'package:share_plus/share_plus.dart';
 
 import '../models/pet.dart';
 import '../widgets/info_chip.dart';
@@ -24,30 +23,13 @@ class PetDetailsScreen extends StatelessWidget {
               icon: const Icon(Icons.arrow_back),
               onPressed: () => Navigator.pop(context),
             ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.share, color: Colors.black),
-                onPressed: () {
-                  Share.share(
-                    '🐾 Meet ${pet.name}!\n'
-                    'Breed: ${pet.breed}\n'
-                    'Age: ${pet.age}\n'
-                    'Gender: ${pet.gender}\n'
-                    'Distance: ${pet.distanceKm.toStringAsFixed(1)} km away\n\n'
-                    'Photo: ${pet.imageUrl}\n'
-                    'Adopt your new best friend today ❤️',
-                    subject: 'Adopt ${pet.name}',
-                  );
-                },
-              ),
-            ],
             flexibleSpace: FlexibleSpaceBar(
               title: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
                   child: Container(
-                    color: Colors.black.withValues(alpha: 0.25),
+                    color: Colors.black.withOpacity(0.25),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 4,
@@ -77,7 +59,6 @@ class PetDetailsScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Gradient overlay bottom
                   DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -85,7 +66,7 @@ class PetDetailsScreen extends StatelessWidget {
                         end: Alignment.bottomCenter,
                         colors: [
                           Colors.transparent,
-                          Colors.black.withValues(alpha: 0.35),
+                          Colors.black.withOpacity(0.35),
                         ],
                       ),
                     ),
@@ -100,7 +81,6 @@ class PetDetailsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Top chips
                   Row(
                     children: [
                       InfoChip(label: pet.breed, icon: Icons.badge),
@@ -138,15 +118,32 @@ class PetDetailsScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
 
-                  // CTA button
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
                       onPressed: () {
+                        final cs = Theme.of(context).colorScheme;
+
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(
-                              "Thanks! We'll contact you about adopting ${pet.name}.",
+                            behavior: SnackBarBehavior.floating,
+                            backgroundColor: cs.primaryContainer,
+                            content: Row(
+                              children: [
+                                const Icon(
+                                  Icons.favorite,
+                                  color: Colors.pinkAccent,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    "Thank you! Your request for ${pet.name} has been sent 💕",
+                                    style: TextStyle(
+                                      color: cs.onPrimaryContainer,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         );
@@ -164,4 +161,72 @@ class PetDetailsScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+void _showHeartsPopup(BuildContext context, String petName) {
+  showGeneralDialog(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: 'Adopted',
+    barrierColor: Colors.black54,
+    pageBuilder: (context, anim1, anim2) {
+      return const SizedBox.shrink();
+    },
+    transitionBuilder: (context, animation, secondaryAnimation, child) {
+      final scale = Curves.easeOutBack.transform(animation.value);
+      final opacity = animation.value;
+
+      return Opacity(
+        opacity: opacity,
+        child: Center(
+          child: Transform.scale(
+            scale: scale,
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Wrap(
+                    spacing: 8,
+                    children: const [
+                      Icon(Icons.favorite, color: Colors.pinkAccent, size: 40),
+                      Icon(Icons.favorite, color: Colors.redAccent, size: 32),
+                      Icon(Icons.favorite, color: Colors.pink, size: 28),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Yay! $petName is one step closer to a home 💕',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'We\'ll share your interest with the shelter.',
+                    style: TextStyle(color: Colors.white70),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text(
+                      'Close',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }
